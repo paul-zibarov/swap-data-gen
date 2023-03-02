@@ -1,23 +1,65 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import logo from './logo.svg';
 import './App.css';
+import Form from './components/Form';
 
 function App() {
+  const [haveMetamask, sethaveMetamask] = useState(true);
+  const [accountAddress, setAccountAddress] = useState('');
+  const [isConnected, setIsConnected] = useState(false);
+
+  const { ethereum } = window;
+
+  useEffect(() => {
+    const { ethereum } = window;
+    const checkMetamaskAvailability = async () => {
+      if (!ethereum) {
+        sethaveMetamask(false);
+      }
+      sethaveMetamask(true);
+    };
+    checkMetamaskAvailability();
+  }, []);
+
+  const connectWallet = async () => {
+    try {
+      if (!ethereum) {
+        sethaveMetamask(false);
+      }
+
+      const accounts = await ethereum.request({
+        method: 'eth_requestAccounts',
+      });
+
+      setAccountAddress(accounts[0]);
+      setIsConnected(true);
+    } catch (error) {
+      setIsConnected(false);
+    }
+  };
+
   return (
     <div className="App">
       <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
+      {haveMetamask ? (
+          <div className="App-header">
+            {isConnected ? (
+              <div className="card">
+              </div>
+            ) : (
+              <img src={logo} className="App-logo" alt="logo" />
+            )}
+            {isConnected ? (
+               <Form></Form>
+            ) : (
+              <button className="btn" onClick={connectWallet}>
+                Connect
+              </button>
+            )}
+          </div>
+        ) : (
+          <p>Please Install MataMask</p>
+        )}
       </header>
     </div>
   );
