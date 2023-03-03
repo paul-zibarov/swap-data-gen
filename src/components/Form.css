@@ -1,12 +1,17 @@
 .container {
+    background-color: #282c34;
     display: flex;
     justify-content: space-between;
+    min-height: 100vh;
 }
 
 form {
     flex: 1;
     text-align: left;
-    margin-top: 5%;
+    color: white;
+    margin-left: 3%;
+    margin-top: 1%;
+
 }
   
 form label {
@@ -15,7 +20,7 @@ form label {
 }
 
 form input {
-    width: 100%;
+    width: 400px;
     padding: 5px;
     border-radius: 5px;
     border: 1px solid #ccc;
@@ -23,10 +28,33 @@ form input {
     margin-bottom: 10px;
 }
 
-form button {
+#button {
     margin-top: 20px;
+    display: block;
 }
 
-#field9 {
-    margin-top: 50px;
+#data {
+    margin-top: 30px;
+    overflow-wrap: break-word;
+    width: 600px;
+    height: 200px;
+    padding: 10px;
+}
+
+#error {
+    margin-top: 20px;
+    color: red;
+    font-size: 20px;
+}
+
+.default {
+    border: 2px solid white;
+}
+
+.changed {
+    border: 2px solid green;
+}
+
+.error {
+    border: 2px solid red;
 }

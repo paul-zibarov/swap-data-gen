@@ -1,8 +1,6 @@
 import React, { useState } from 'react';
-import { keccak256 } from 'ethers/lib/utils';
 import { Contract, ethers } from 'ethers';
 
-import erc20ABI from '../abi/erc20.json'
 import routerABI from '../abi/router.json'
 import "./Form.css";
 
@@ -17,10 +15,13 @@ interface FormData {
   gasPrice: number;
 }
 
-function Form() {
-  const provider = new ethers.providers.Web3Provider(window.ethereum);
-  const signer = provider.getSigner();
+enum HexStatus {
+  Default = "default",
+  Changed = "changed",
+  Error = "error"
+}
 
+function Form() {
   const [formData, setFormData] = useState<FormData>({
     assetA: '',
     assetB: '',
@@ -31,10 +32,15 @@ function Form() {
     router: '',
     gasPrice: 5
   });
+
+  const [hexStatus, setHexStatus] = useState(HexStatus.Default);
   const [hex, setHex] = useState('');
+  const [errorMessage, setErrorMessage] = useState('');
 
   const handleFormChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = event.target;
+
+    setErrorMessage("");
 
     if(name === 'slippage' || name === 'amountA' || name === 'amountB') {
       if(!value || value.match(/^\d{1,}(\.\d{0,4})?$/)) {
@@ -48,6 +54,8 @@ function Form() {
         ...prevData,
         [name]: value,
       }));
+
+      setHexStatus(HexStatus.Default);
     }
   };
 
@@ -58,11 +66,12 @@ function Form() {
       !ethers.utils.isAddress(formData.assetB) ||
       !ethers.utils.isAddress(formData.sender) ||
       !ethers.utils.isAddress(formData.router)
-    ) { 
-      console.error('Invalid addresses');
+    ) {
+      setErrorMessage("Invalid addresses");
+      setHexStatus(HexStatus.Error);
     } else {
       const amountBMin = (formData.amountB / (1 + formData.slippage)) * 100;
-      const router = new Contract(formData.router, routerABI, provider);
+      const router = new Contract(formData.router, routerABI);
 
       const hex = router.interface.encodeFunctionData('swapExactTokensForTokens', [
         ethers.utils.parseUnits(formData.amountA.toString(), 18),
@@ -73,6 +82,7 @@ function Form() {
       ]);
 
       setHex(hex);
+      setHexStatus(HexStatus.Changed);
     }
   };
 
@@ -143,13 +153,9 @@ function Form() {
                 onChange={handleFormChange}
             />
             </div>
-            <button type="submit">Generate tx data</button>
-            <input
-                type="text"
-                id="field9"
-                name="result"
-                value={hex}
-            />
+            <button id="button" type="submit">Generate tx data</button>
+            { (errorMessage) ? <div id="error">{errorMessage}</div> : null }
+            <div id="data" className={hexStatus}>{hex}</div>
         </form>
     </div>
   );
